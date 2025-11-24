@@ -330,38 +330,30 @@
                                 </div>
                             </div>
 
-                            <table id="datatable-buttons" class="table dt-responsive nowrap"
-                                style="border-collapse: collapse; border-spacing: 0; width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Client</th>
-                                        <th>Marché</th>
-                                        <th>Encours Global</th>
-                                        <th>Capital & Intérêt</th>
-                                        <th>Capital</th>
-                                        <th>Capital Restant</th>
-                                        <th>Intérêt</th>
-                                        <th>Intérêt Restant</th>
-                                        <th>Epargne</th>
-                                        <th>Assurance</th>
-                                        <th>Frais de déblocage</th>
-                                        <th>Frais de carte</th>
-                                        <th style="background-color: #ff3d60; color: white;">Rétrait Épargne</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($recouvrements as $item)
-                                    {{-- Vérifier si Credit et Client existent --}}
-                                    @if($item->Credit && $item->Credit->Client)
-                                    <tr>
-                                        <td>
-                                            <img src="/assets/images/users/{{ $item->Credit->Client['image'] }}" alt=""
-                                                class="rounded-circle avatar-sm">
-                                        </td>
-                                        <td>{{ $item->Credit->Client['nom_prenom'] }}</td>
-                                        <td>{{ $item->Credit->Client->Marche['libelle'] ?? 'N/A' }}</td>
-
+                            <div class="table-responsive">
+                                <table id="datatable-buttons"
+                                    class="table table-bordered table-hover dt-responsive nowrap" style="width:100%">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Photo</th>
+                                            <th>Client</th>
+                                            <th>Marché</th>
+                                            <th>Encours Global</th>
+                                            <th>Capital & Intérêt</th>
+                                            <th>Capital</th>
+                                            <th>Capital Restant</th>
+                                            <th>Intérêt</th>
+                                            <th>Intérêt Restant</th>
+                                            <th>Epargne</th>
+                                            <th>Assurance</th>
+                                            <th>Frais Déblocage</th>
+                                            <th>Frais Carte</th>
+                                            <th style="background-color: #ff3d60; color: white;">Rétrait Épargne</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($recouvrements as $item)
+                                        @if($item->Credit && $item->Credit->Client)
                                         @php
                                         $montantInteret = intval($item->Credit->montant_interet);
                                         $interetJrs = intval($item->interet_jrs);
@@ -370,17 +362,25 @@
                                         $encoursGlobal = $montantInteret - $totalInteret;
                                         @endphp
 
-                                        @if($encoursGlobal < 0) <td>{{ number_format($encoursGlobal, 0, ',', ' ') }} CFA
-                                            (Erreur)</td>
-                                            @elseif($encoursGlobal == 0)
+                                        <tr>
                                             <td>
-                                                <div class="badge badge-soft-success font-size-14">
-                                                    <i class="ri-check-line align-middle mr-2"></i>Crédit soldé
-                                                </div>
+                                                <img src="/assets/images/users/{{ $item->Credit->Client['image'] }}"
+                                                    alt="{{ $item->Credit->Client['nom_prenom'] }}"
+                                                    class="rounded-circle avatar-sm" width="40" height="40">
                                             </td>
-                                            @else
-                                            <td>{{ number_format($encoursGlobal, 0, ',', ' ') }} CFA</td>
-                                            @endif
+                                            <td>{{ $item->Credit->Client['nom_prenom'] }}</td>
+                                            <td>{{ $item->Credit->Client->Marche['libelle'] ?? 'N/A' }}</td>
+
+                                            <td class="font-weight-bold">
+                                                @if($encoursGlobal < 0) <span class="text-danger">{{
+                                                    number_format($encoursGlobal, 0, ',', ' ') }} CFA</span>
+                                                    <small class="text-muted d-block">(Erreur)</small>
+                                                    @elseif($encoursGlobal == 0)
+                                                    <span class="badge badge-success">Crédit soldé</span>
+                                                    @else
+                                                    {{ number_format($encoursGlobal, 0, ',', ' ') }} CFA
+                                                    @endif
+                                            </td>
 
                                             <td>{{ number_format($item->Credit['montant_interet'], 0, ',', ' ') }} CFA
                                             </td>
@@ -390,40 +390,43 @@
                                             <td>{{ number_format($item->interet_jrs, 0, ',', ' ') }} CFA</td>
                                             <td>{{ number_format(intval($item->Credit->interet) - $item->recouvInte(),
                                                 0, ',', ' ') }} CFA</td>
-                                            <td>{{ number_format(($item->epargne_jrs - $item->retrait), 0, ',', ' ') }}
-                                                CFA</td>
+                                            <td class="text-info">{{ number_format(($item->epargne_jrs -
+                                                $item->retrait), 0, ',', ' ') }} CFA</td>
                                             <td>{{ number_format($item->assurance, 0, ',', ' ') }} CFA</td>
                                             <td>{{ number_format($item->getFraisDeblocageCredit($item->credit_id), 0,
                                                 ',', ' ') }} CFA</td>
                                             <td>{{ number_format($item->getFraisCarteCredit($item->credit_id), 0, ',', '
                                                 ') }} CFA</td>
-                                            <td>{{ number_format($item->retrait, 0, ',', ' ') }} CFA</td>
-                                    </tr>
-                                    @else
-                                    {{-- Log pour debug --}}
-                                    @php
-                                    Log::warning('Credit ou Client manquant pour recouvrement ID: ' . $item->id);
-                                    @endphp
-                                    @endif
-                                    @endforeach
-
-                                    {{-- Votre ligne de totaux --}}
-                                    <tr style="background-color: #1cbb8c; color: white;">
-                                        <td colspan="4"><strong>TOTAUX</strong></td>
-                                        <td>{{ number_format($sum_montant_interet, 0, ',', ' ') }} CFA</td>
-                                        <td>{{ number_format($total->sum('recouvrement_jrs'), 0, ',', ' ') }} CFA</td>
-                                        <td></td>
-                                        <td>{{ number_format($total->sum('interet_jrs'), 0, ',', ' ') }} CFA</td>
-                                        <td></td>
-                                        <td>{{ number_format(($total->sum('epargne_jrs') - $total->sum('retrait')), 0,
-                                            ',', ' ') }} CFA</td>
-                                        <td>{{ number_format($total->sum('assurance'), 0, ',', ' ') }} CFA</td>
-                                        <td>{{ number_format($epargnes->sum('frais_deblocage'), 0, ',', ' ') }} CFA</td>
-                                        <td>{{ number_format($epargnes->sum('frais_carte'), 0, ',', ' ') }} CFA</td>
-                                        <td>{{ number_format($total->sum('retrait'), 0, ',', ' ') }} CFA</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                            <td class="text-warning">{{ number_format($item->retrait, 0, ',', ' ') }}
+                                                CFA</td>
+                                        </tr>
+                                        @else
+                                        @php
+                                        \Log::warning('Credit ou Client manquant pour recouvrement ID: ' . $item->id);
+                                        @endphp
+                                        @endif
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="bg-success text-white">
+                                        <tr>
+                                            <th colspan="4" class="text-center"><strong>TOTAUX GÉNÉRAUX</strong></th>
+                                            <th>{{ number_format($sum_montant_interet, 0, ',', ' ') }} CFA</th>
+                                            <th>{{ number_format($total->sum('recouvrement_jrs'), 0, ',', ' ') }} CFA
+                                            </th>
+                                            <th></th>
+                                            <th>{{ number_format($total->sum('interet_jrs'), 0, ',', ' ') }} CFA</th>
+                                            <th></th>
+                                            <th>{{ number_format(($total->sum('epargne_jrs') - $total->sum('retrait')),
+                                                0, ',', ' ') }} CFA</th>
+                                            <th>{{ number_format($total->sum('assurance'), 0, ',', ' ') }} CFA</th>
+                                            <th>{{ number_format($epargnes->sum('frais_deblocage'), 0, ',', ' ') }} CFA
+                                            </th>
+                                            <th>{{ number_format($epargnes->sum('frais_carte'), 0, ',', ' ') }} CFA</th>
+                                            <th>{{ number_format($total->sum('retrait'), 0, ',', ' ') }} CFA</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div> <!-- end col -->
