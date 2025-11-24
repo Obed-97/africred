@@ -376,7 +376,7 @@
                                     @endphp
                                     <tr>
                                         <td>
-                                            <img src="/assets/images/users/{{$item->Credit->Client['image']}}" alt=""
+                                            <img src="/assets/images/users/{{$item->Credit->Client['image'] ?? ''}}" alt=""
                                                 class="rounded-circle avatar-sm">
                                         </td>
 
